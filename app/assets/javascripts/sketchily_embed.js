@@ -8,13 +8,6 @@ function submitHandler(event) {
   svgCanvas[id].getSvgString()(function (data, error) {
     handleSvgData(data, error, id);
   });
-  event.preventDefault();
-  event.stopImmediatePropagation();
-}
-
-function attachSubmitHandler(event) {
-  var id = event.data;
-  $("input#" + id).closest("form").on("submit.svgedit_" + id, null, id, submitHandler);
 }
 
 function handleSvgData(data, error, id) {
@@ -25,9 +18,6 @@ function handleSvgData(data, error, id) {
     var input = $("input#" + id);
     var form = input.closest("form");
     input.attr("value", sketchily_encode64("<?xml version=\"1.0\"?>\n" + data));
-    form.off("submit.svgedit_" + id);
-    form.one("submit.svgedit_" + id, null, id, attachSubmitHandler);
-    form.submit();
   }
 }
 
