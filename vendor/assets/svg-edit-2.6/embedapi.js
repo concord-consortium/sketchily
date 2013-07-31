@@ -3,9 +3,9 @@ function embedded_svg_edit(frame){
   //initialize communication
   this.frame = frame;
   this.stack = []; //callback stack
-  
+
   var editapi = this;
-  
+
   window.addEventListener("message", function(e){
     if(e.data.substr(0,5) == "ERROR"){
       editapi.stack.splice(0,1)[0](e.data,"error")
@@ -48,9 +48,9 @@ svgCanvas.setSvgString("string")(function(data, error){
   }
 })
 
-Everything is done with the same API as the real svg-edit, 
+Everything is done with the same API as the real svg-edit,
 and all documentation is unchanged. The only difference is
-when handling returns, the callback notation is used instead. 
+when handling returns, the callback notation is used instead.
 
 var blah = new embedded_svg_edit(window.frames['svgedit']);
 blah.clearSelection("woot","blah",1337,[1,2,3,4,5,"moo"],-42,{a: "tree",b:6, c: 9})(function(){console.log("GET DATA",arguments)})
@@ -64,17 +64,17 @@ function embedded_svg_edit(frame){
   this.encode = embedded_svg_edit.encode;
   //List of functions extracted with this:
   //Run in firebug on http://svg-edit.googlecode.com/svn/trunk/docs/files/svgcanvas-js.html
-  
+
   //for(var i=0,q=[],f = document.querySelectorAll("div.CFunction h3.CTitle a");i<f.length;i++){q.push(f[i].name)};q
   //var functions = ["clearSelection", "addToSelection", "removeFromSelection", "open", "save", "getSvgString", "setSvgString",
   //"createLayer", "deleteCurrentLayer", "setCurrentLayer", "renameCurrentLayer", "setCurrentLayerPosition", "setLayerVisibility",
   //"moveSelectedToLayer", "clear"];
-  
-  
+
+
   //Newer, well, it extracts things that aren't documented as well. All functions accessible through the normal thingy can now be accessed though the API
   //var l=[];for(var i in svgCanvas){if(typeof svgCanvas[i] == "function"){l.push(i)}};
   //run in svgedit itself
-  var functions = ["updateElementFromJson", "embedImage", "fixOperaXML", "clearSelection", "addToSelection",
+  var functions = ["setBackground", "updateElementFromJson", "embedImage", "fixOperaXML", "clearSelection", "addToSelection",
 		"removeFromSelection", "addNodeToSelection", "open", "save", "getSvgString", "setSvgString", "createLayer",
 		"deleteCurrentLayer", "getCurrentDrawing", "setCurrentLayer", "renameCurrentLayer", "setCurrentLayerPosition",
 		"setLayerVisibility", "moveSelectedToLayer", "clear", "clearPath", "getNodePoint", "clonePathNode", "deletePathNode",
@@ -89,7 +89,7 @@ function embedded_svg_edit(frame){
 		"getStrokedBBox", "getVisibleElements", "cycleElement", "getUndoStackSize", "getRedoStackSize", "getNextUndoCommandText",
 		"getNextRedoCommandText", "undo", "redo", "cloneSelectedElements", "alignSelectedElements", "getZoom", "getVersion",
 		"setIconSize", "setLang", "setCustomHandlers"];
-  
+
   //TODO: rewrite the following, it's pretty scary.
   for(var i = 0; i < functions.length; i++){
     this[functions[i]] = (function(d){
@@ -99,7 +99,7 @@ function embedded_svg_edit(frame){
           args.push(arguments[g]);
         }
         var cbid = t.send(d,args, function(){})  //the callback (currently it's nothing, but will be set later
-        
+
         return function(newcallback){
           t.callbacks[cbid] = newcallback; //set callback
         }
@@ -128,7 +128,7 @@ embedded_svg_edit.encode = function(obj){
   //simple partial JSON encoder implementation
   if(window.JSON && JSON.stringify) return JSON.stringify(obj);
   var enc = arguments.callee; //for purposes of recursion
-  
+
   if(typeof obj == "boolean" || typeof obj == "number"){
       return obj+'' //should work...
   }else if(typeof obj == "string"){
@@ -168,6 +168,3 @@ embedded_svg_edit.prototype.send = function(name, args, callback){
   return cbid;
   //this.stack.shift()("svgCanvas['"+name+"']("+argstr.join(",")+")")
 }
-
-
-
