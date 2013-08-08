@@ -5,6 +5,8 @@ var svgCanvas = svgCanvas || {};
 
 function submitHandler(event) {
   var id = event.data;
+  svgCanvas[id].insertImage();
+
   svgCanvas[id].getSvgString()(function (data, error) {
     handleSvgData(data, error, id);
   });
@@ -34,7 +36,9 @@ function initEmbed(id, value, hide_menu, hide_image_tool, show_hyperlink_tool, h
   tool_path_button.parentNode.removeChild(tool_path_button);
 
   var shape_lib_button = doc.getElementById('tools_shapelib_show');
-  shape_lib_button.parentNode.removeChild(shape_lib_button);
+  if ( typeof shape_lib_button == 'undefined') {
+    shape_lib_button.parentNode.removeChild(shape_lib_button);
+  }
 
   var tool_image_button = doc.getElementById('tool_image');
   tool_image_button.parentNode.removeChild(tool_image_button);
@@ -43,7 +47,9 @@ function initEmbed(id, value, hide_menu, hide_image_tool, show_hyperlink_tool, h
   tool_zoom_button.parentNode.removeChild(tool_zoom_button);
 
   var tool_eyedropper_button = doc.getElementById('tool_eyedropper');
-  tool_eyedropper_button.parentNode.removeChild(tool_eyedropper_button);
+  if ( typeof tool_eyedropper_button == 'undefined') {
+    tool_eyedropper_button.parentNode.removeChild(tool_eyedropper_button);
+  }
 
   var zoom_panel = doc.getElementById('zoom_panel');
   zoom_panel.parentNode.removeChild(zoom_panel);
