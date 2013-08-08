@@ -5,7 +5,6 @@ var svgCanvas = svgCanvas || {};
 
 function submitHandler(event) {
   var id = event.data;
-  svgCanvas[id].insertImage();
 
   svgCanvas[id].getSvgString()(function (data, error) {
     handleSvgData(data, error, id);
