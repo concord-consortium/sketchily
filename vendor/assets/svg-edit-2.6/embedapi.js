@@ -94,16 +94,16 @@ function embedded_svg_edit(frame){
   for(var i = 0; i < functions.length; i++){
     this[functions[i]] = (function(d){
       return function(){
-        var t = this //new callback
+        var t = this; //new callback
         for(var g = 0, args = []; g < arguments.length; g++){
           args.push(arguments[g]);
         }
-        var cbid = t.send(d,args, function(){})  //the callback (currently it's nothing, but will be set later
+        var cbid = t.send(d,args, function(){});  //the callback (currently it's nothing, but will be set later
 
         return function(newcallback){
           t.callbacks[cbid] = newcallback; //set callback
-        }
-      }
+        };
+      };
     })(functions[i])
   }
   //TODO: use AddEvent for Trident browsers, currently they dont support SVG, but they do support onmessage
@@ -121,7 +121,7 @@ function embedded_svg_edit(frame){
       }
     }
     //this.stack.shift()[0](e.data,e.data.substr(0,5) == "ERROR"?'error':null) //replace with shift
-  }, false)
+  }, false);
 }
 
 embedded_svg_edit.encode = function(obj){
