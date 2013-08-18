@@ -40,16 +40,33 @@ var isWindows_ = userAgent.indexOf('Windows') >= 0;
 var isMac_ = userAgent.indexOf('Macintosh') >= 0;
 var isTouch_ = 'ontouchstart' in window;
 
-var supportsSelectors_ = (function() {
+// Create vars first so they can be updated twice if need be
+var supportsSelectors_;
+var supportsXpath_;
+var supportsPathReplaceItem_;
+var supportsPathInsertItemBefore_;
+var supportsTextCharPos_;
+var supportsGoodTextCharPos_;
+var supportsBBox_;
+var supportsPathBBox_;
+var supportsHVLineContainerBBox_;
+var supportsEditableText_;
+var supportsGoodDecimals_;
+var supportsNonScalingStroke_;
+var supportsNativeSVGTransformLists_;
+
+function checkFeatures(){
+
+supportsSelectors_ = (function() {
 	return !!svg.querySelector;
 })();
 
-var supportsXpath_ = (function() {
+supportsXpath_ = (function() {
 	return !!document.evaluate;
 })();
 
 // segList functions (for FF1.5 and 2.0)
-var supportsPathReplaceItem_ = (function() {
+supportsPathReplaceItem_ = (function() {
 	var path = document.createElementNS(svgns, 'path');
 	path.setAttribute('d','M0,0 10,10');
 	var seglist = path.pathSegList;
@@ -61,7 +78,7 @@ var supportsPathReplaceItem_ = (function() {
 	return false;
 })();
 
-var supportsPathInsertItemBefore_ = (function() {
+supportsPathInsertItemBefore_ = (function() {
 	var path = document.createElementNS(svgns,'path');
 	path.setAttribute('d','M0,0 10,10');
 	var seglist = path.pathSegList;
@@ -75,7 +92,7 @@ var supportsPathInsertItemBefore_ = (function() {
 
 // if rendered in an invisible iframe on FF getStartPositionOfChar
 // throws an exception
-var supportsTextCharPos_ = (function() {
+supportsTextCharPos_ = (function() {
 	var svgcontent = document.createElementNS(svgns, 'svg');
 	document.documentElement.appendChild(svgcontent);
 	svgcontent.setAttribute('x', 5);
@@ -94,7 +111,7 @@ var supportsTextCharPos_ = (function() {
 })();
 
 // text character positioning (for IE9)
-var supportsGoodTextCharPos_ = (function() {
+supportsGoodTextCharPos_ = (function() {
 	if(!supportsTextCharPos_){ return false; }
 	var retValue = false;
 	var svgroot = document.createElementNS(svgns, 'svg');
@@ -112,7 +129,7 @@ var supportsGoodTextCharPos_ = (function() {
 
 // if rendered in an invisible iframe on FF getBBox
 // throws an exception
-var supportsBBox_ = (function() {
+supportsBBox_ = (function() {
 	var svgcontent = document.createElementNS(svgns, 'svg');
 	document.documentElement.appendChild(svgcontent);
 	var path = document.createElementNS(svgns, 'path');
@@ -128,7 +145,7 @@ var supportsBBox_ = (function() {
 	return success;
 })();
 
-var supportsPathBBox_ = (function() {
+supportsPathBBox_ = (function() {
 	if (!supportsBBox_){ return false; }
 	var svgcontent = document.createElementNS(svgns, 'svg');
 	document.documentElement.appendChild(svgcontent);
@@ -141,7 +158,7 @@ var supportsPathBBox_ = (function() {
 })();
 
 // Support for correct bbox sizing on groups with horizontal/vertical lines
-var supportsHVLineContainerBBox_ = (function() {
+supportsHVLineContainerBBox_ = (function() {
 	if (!supportsBBox_){ return false; }
 	var svgcontent = document.createElementNS(svgns, 'svg');
 	document.documentElement.appendChild(svgcontent);
@@ -159,12 +176,12 @@ var supportsHVLineContainerBBox_ = (function() {
 	return (bbox.width == 15);
 })();
 
-var supportsEditableText_ = (function() {
+supportsEditableText_ = (function() {
 	// TODO: Find better way to check support for this
 	return isOpera_;
 })();
 
-var supportsGoodDecimals_ = (function() {
+supportsGoodDecimals_ = (function() {
 	// Correct decimals on clone attributes (Opera < 10.5/win/non-en)
 	var rect = document.createElementNS(svgns, 'rect');
 	rect.setAttribute('x',.1);
@@ -177,20 +194,22 @@ var supportsGoodDecimals_ = (function() {
 	return retValue;
 })();
 
-var supportsNonScalingStroke_ = (function() {
+supportsNonScalingStroke_ = (function() {
 	var rect = document.createElementNS(svgns, 'rect');
 	rect.setAttribute('style','vector-effect:non-scaling-stroke');
 	return rect.style.vectorEffect === 'non-scaling-stroke';
 })();
 
-var supportsNativeSVGTransformLists_ = (function() {
+supportsNativeSVGTransformLists_ = (function() {
 	var rect = document.createElementNS(svgns, 'rect');
 	var rxform = rect.transform.baseVal;
-	
 	var t1 = svg.createSVGTransform();
 	rxform.appendItem(t1);
 	return rxform.getItem(0) == t1;
 })();
+}
+
+checkFeatures();
 
 // Public API
 
@@ -202,6 +221,8 @@ svgedit.browser.isChrome = function() { return isChrome_; }
 svgedit.browser.isWindows = function() { return isWindows_; }
 svgedit.browser.isMac = function() { return isMac_; }
 svgedit.browser.isTouch = function() { return isTouch_; }
+
+svgedit.browser.checkFeatures = checkFeatures;
 
 svgedit.browser.supportsSelectors = function() { return supportsSelectors_; }
 svgedit.browser.supportsXpath = function() { return supportsXpath_; }
