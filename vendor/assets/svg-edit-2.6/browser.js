@@ -73,8 +73,29 @@ var supportsPathInsertItemBefore_ = (function() {
 	return false;
 })();
 
+// if rendered in an invisible iframe on FF getStartPositionOfChar
+// throws an exception
+var supportsTextCharPos_ = (function() {
+	var svgcontent = document.createElementNS(svgns, 'svg');
+	document.documentElement.appendChild(svgcontent);
+	svgcontent.setAttribute('x', 5);
+	var text = document.createElementNS(svgns,'text');
+	var success = true;
+	text.textContent = 'a';
+	svgcontent.appendChild(text);
+	try {
+		text.getStartPositionOfChar(0);
+	} catch (e) {
+		// most likely we are on FF in an invisible iframe
+		success = false;
+	}
+	document.documentElement.removeChild(svgcontent);
+	return success;
+})();
+
 // text character positioning (for IE9)
 var supportsGoodTextCharPos_ = (function() {
+	if(!supportsTextCharPos_){ return false; }
 	var retValue = false;
 	var svgroot = document.createElementNS(svgns, 'svg');
 	var svgcontent = document.createElementNS(svgns, 'svg');
@@ -89,7 +110,26 @@ var supportsGoodTextCharPos_ = (function() {
 	return (pos === 0);
 })();
 
+// if rendered in an invisible iframe on FF getBBox
+// throws an exception
+var supportsBBox_ = (function() {
+	var svgcontent = document.createElementNS(svgns, 'svg');
+	document.documentElement.appendChild(svgcontent);
+	var path = document.createElementNS(svgns, 'path');
+	path.setAttribute('d','M0,0 C0,0 10,10 10,0');
+	svgcontent.appendChild(path);
+	var success = true;
+	try {
+		path.getBBox();
+	} catch (e) {
+		success = false;
+	}
+	document.documentElement.removeChild(svgcontent);
+	return success;
+})();
+
 var supportsPathBBox_ = (function() {
+	if (!supportsBBox_){ return false; }
 	var svgcontent = document.createElementNS(svgns, 'svg');
 	document.documentElement.appendChild(svgcontent);
 	var path = document.createElementNS(svgns, 'path');
@@ -102,6 +142,7 @@ var supportsPathBBox_ = (function() {
 
 // Support for correct bbox sizing on groups with horizontal/vertical lines
 var supportsHVLineContainerBBox_ = (function() {
+	if (!supportsBBox_){ return false; }
 	var svgcontent = document.createElementNS(svgns, 'svg');
 	document.documentElement.appendChild(svgcontent);
 	var path = document.createElementNS(svgns, 'path');
@@ -167,8 +208,10 @@ svgedit.browser.supportsXpath = function() { return supportsXpath_; }
 
 svgedit.browser.supportsPathReplaceItem = function() { return supportsPathReplaceItem_; }
 svgedit.browser.supportsPathInsertItemBefore = function() { return supportsPathInsertItemBefore_; }
+svgedit.browser.supportsBBox = function() { return supportsBBox_; }
 svgedit.browser.supportsPathBBox = function() { return supportsPathBBox_; }
 svgedit.browser.supportsHVLineContainerBBox = function() { return supportsHVLineContainerBBox_; }
+svgedit.browser.supportsTextCharPos = function() { return supportsTextCharPos_; }
 svgedit.browser.supportsGoodTextCharPos = function() { return supportsGoodTextCharPos_; }
 svgedit.browser.supportsEditableText = function() { return supportsEditableText_; }
 svgedit.browser.supportsGoodDecimals = function() { return supportsGoodDecimals_; }
