@@ -67,25 +67,40 @@ svgedit.units.init = function(elementContainer) {
 	var svgns = 'http://www.w3.org/2000/svg';
 
 	// Get correct em/ex values by creating a temporary SVG.
-	var svg = document.createElementNS(svgns, 'svg');
-	document.body.appendChild(svg);
-	var rect = document.createElementNS(svgns,'rect');
-	rect.setAttribute('width',"1em");
-	rect.setAttribute('height',"1ex");
-	rect.setAttribute('x',"1in");
-	svg.appendChild(rect);
-	var bb = rect.getBBox();
-	document.body.removeChild(svg);
+	// if bbox is not supported at all then this can't be calulated
+	if(svgedit.browser.supportsBBox()){
+		var svg = document.createElementNS(svgns, 'svg');
+		document.body.appendChild(svg);
+		var rect = document.createElementNS(svgns,'rect');
+		rect.setAttribute('width',"1em");
+		rect.setAttribute('height',"1ex");
+		rect.setAttribute('x',"1in");
+		svg.appendChild(rect);
+		var bb = rect.getBBox();
+		document.body.removeChild(svg);
 
-	var inch = bb.x;
-	typeMap_['em'] = bb.width;
-	typeMap_['ex'] = bb.height;
-	typeMap_['in'] = inch;
-	typeMap_['cm'] = inch / 2.54;
-	typeMap_['mm'] = inch / 25.4;
-	typeMap_['pt'] = inch / 72;
-	typeMap_['pc'] = inch / 6;
-	typeMap_['%'] = 0;
+		var inch = bb.x;
+		typeMap_['em'] = bb.width;
+		typeMap_['ex'] = bb.height;
+		typeMap_['in'] = inch;
+		typeMap_['cm'] = inch / 2.54;
+		typeMap_['mm'] = inch / 25.4;
+		typeMap_['pt'] = inch / 72;
+		typeMap_['pc'] = inch / 6;
+		typeMap_['%'] = 0;
+	} else {
+		// use a default of 96 pixels per inch if BBox is not
+		// available at this point
+		var inch = 96;
+		typeMap_['em'] = 16;
+		typeMap_['ex'] = 8;
+		typeMap_['in'] = inch;
+		typeMap_['cm'] = inch / 2.54;
+		typeMap_['mm'] = inch / 25.4;
+		typeMap_['pt'] = inch / 72;
+		typeMap_['pc'] = inch / 6;
+		typeMap_['%'] = 0;
+	}
 };
 
 // Group: Unit conversion functions

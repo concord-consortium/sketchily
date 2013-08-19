@@ -40,116 +40,176 @@ var isWindows_ = userAgent.indexOf('Windows') >= 0;
 var isMac_ = userAgent.indexOf('Macintosh') >= 0;
 var isTouch_ = 'ontouchstart' in window;
 
-var supportsSelectors_ = (function() {
-	return !!svg.querySelector;
-})();
+// Create vars first so they can be updated twice if need be
+var supportsSelectors_;
+var supportsXpath_;
+var supportsPathReplaceItem_;
+var supportsPathInsertItemBefore_;
+var supportsTextCharPos_;
+var supportsGoodTextCharPos_;
+var supportsBBox_;
+var supportsPathBBox_;
+var supportsHVLineContainerBBox_;
+var supportsEditableText_;
+var supportsGoodDecimals_;
+var supportsNonScalingStroke_;
+var supportsNativeSVGTransformLists_;
 
-var supportsXpath_ = (function() {
-	return !!document.evaluate;
-})();
+function checkFeatures(){
 
-// segList functions (for FF1.5 and 2.0)
-var supportsPathReplaceItem_ = (function() {
-	var path = document.createElementNS(svgns, 'path');
-	path.setAttribute('d','M0,0 10,10');
-	var seglist = path.pathSegList;
-	var seg = path.createSVGPathSegLinetoAbs(5,5);
-	try {
-		seglist.replaceItem(seg, 0);
-		return true;
-	} catch(err) {}
-	return false;
-})();
+	supportsSelectors_ = (function() {
+		return !!svg.querySelector;
+	})();
 
-var supportsPathInsertItemBefore_ = (function() {
-	var path = document.createElementNS(svgns,'path');
-	path.setAttribute('d','M0,0 10,10');
-	var seglist = path.pathSegList;
-	var seg = path.createSVGPathSegLinetoAbs(5,5);
-	try {
-		seglist.insertItemBefore(seg, 0);
-		return true;
-	} catch(err) {}
-	return false;
-})();
+	supportsXpath_ = (function() {
+		return !!document.evaluate;
+	})();
 
-// text character positioning (for IE9)
-var supportsGoodTextCharPos_ = (function() {
-	var retValue = false;
-	var svgroot = document.createElementNS(svgns, 'svg');
-	var svgcontent = document.createElementNS(svgns, 'svg');
-	document.documentElement.appendChild(svgroot);
-	svgcontent.setAttribute('x', 5);
-	svgroot.appendChild(svgcontent);
-	var text = document.createElementNS(svgns,'text');
-	text.textContent = 'a';
-	svgcontent.appendChild(text);
-	var pos = text.getStartPositionOfChar(0).x;
-	document.documentElement.removeChild(svgroot);
-	return (pos === 0);
-})();
+	// segList functions (for FF1.5 and 2.0)
+	supportsPathReplaceItem_ = (function() {
+		var path = document.createElementNS(svgns, 'path');
+		path.setAttribute('d','M0,0 10,10');
+		var seglist = path.pathSegList;
+		var seg = path.createSVGPathSegLinetoAbs(5,5);
+		try {
+			seglist.replaceItem(seg, 0);
+			return true;
+		} catch(err) {}
+		return false;
+	})();
 
-var supportsPathBBox_ = (function() {
-	var svgcontent = document.createElementNS(svgns, 'svg');
-	document.documentElement.appendChild(svgcontent);
-	var path = document.createElementNS(svgns, 'path');
-	path.setAttribute('d','M0,0 C0,0 10,10 10,0');
-	svgcontent.appendChild(path);
-	var bbox = path.getBBox();
-	document.documentElement.removeChild(svgcontent);
-	return (bbox.height > 4 && bbox.height < 5);
-})();
+	supportsPathInsertItemBefore_ = (function() {
+		var path = document.createElementNS(svgns,'path');
+		path.setAttribute('d','M0,0 10,10');
+		var seglist = path.pathSegList;
+		var seg = path.createSVGPathSegLinetoAbs(5,5);
+		try {
+			seglist.insertItemBefore(seg, 0);
+			return true;
+		} catch(err) {}
+		return false;
+	})();
 
-// Support for correct bbox sizing on groups with horizontal/vertical lines
-var supportsHVLineContainerBBox_ = (function() {
-	var svgcontent = document.createElementNS(svgns, 'svg');
-	document.documentElement.appendChild(svgcontent);
-	var path = document.createElementNS(svgns, 'path');
-	path.setAttribute('d','M0,0 10,0');
-	var path2 = document.createElementNS(svgns, 'path');
-	path2.setAttribute('d','M5,0 15,0');
-	var g = document.createElementNS(svgns, 'g');
-	g.appendChild(path);
-	g.appendChild(path2);
-	svgcontent.appendChild(g);
-	var bbox = g.getBBox();
-	document.documentElement.removeChild(svgcontent);
-	// Webkit gives 0, FF gives 10, Opera (correctly) gives 15
-	return (bbox.width == 15);
-})();
+	// if rendered in an invisible iframe on FF getStartPositionOfChar
+	// throws an exception
+	supportsTextCharPos_ = (function() {
+		var svgcontent = document.createElementNS(svgns, 'svg');
+		document.documentElement.appendChild(svgcontent);
+		svgcontent.setAttribute('x', 5);
+		var text = document.createElementNS(svgns,'text');
+		var success = true;
+		text.textContent = 'a';
+		svgcontent.appendChild(text);
+		try {
+			text.getStartPositionOfChar(0);
+		} catch (e) {
+			// most likely we are on FF in an invisible iframe
+			success = false;
+		}
+		document.documentElement.removeChild(svgcontent);
+		return success;
+	})();
 
-var supportsEditableText_ = (function() {
-	// TODO: Find better way to check support for this
-	return isOpera_;
-})();
+	// text character positioning (for IE9)
+	supportsGoodTextCharPos_ = (function() {
+		if(!supportsTextCharPos_){ return false; }
+		var retValue = false;
+		var svgroot = document.createElementNS(svgns, 'svg');
+		var svgcontent = document.createElementNS(svgns, 'svg');
+		document.documentElement.appendChild(svgroot);
+		svgcontent.setAttribute('x', 5);
+		svgroot.appendChild(svgcontent);
+		var text = document.createElementNS(svgns,'text');
+		text.textContent = 'a';
+		svgcontent.appendChild(text);
+		var pos = text.getStartPositionOfChar(0).x;
+		document.documentElement.removeChild(svgroot);
+		return (pos === 0);
+	})();
 
-var supportsGoodDecimals_ = (function() {
-	// Correct decimals on clone attributes (Opera < 10.5/win/non-en)
-	var rect = document.createElementNS(svgns, 'rect');
-	rect.setAttribute('x',.1);
-	var crect = rect.cloneNode(false);
-	var retValue = (crect.getAttribute('x').indexOf(',') == -1);
-	if(!retValue) {
-		$.alert("NOTE: This version of Opera is known to contain bugs in SVG-edit.\n\
-		Please upgrade to the <a href='http://opera.com'>latest version</a> in which the problems have been fixed.");
-	}
-	return retValue;
-})();
+	// if rendered in an invisible iframe on FF getBBox
+	// throws an exception
+	supportsBBox_ = (function() {
+		var svgcontent = document.createElementNS(svgns, 'svg');
+		document.documentElement.appendChild(svgcontent);
+		var path = document.createElementNS(svgns, 'path');
+		path.setAttribute('d','M0,0 C0,0 10,10 10,0');
+		svgcontent.appendChild(path);
+		var success = true;
+		try {
+			path.getBBox();
+		} catch (e) {
+			success = false;
+		}
+		document.documentElement.removeChild(svgcontent);
+		return success;
+	})();
 
-var supportsNonScalingStroke_ = (function() {
-	var rect = document.createElementNS(svgns, 'rect');
-	rect.setAttribute('style','vector-effect:non-scaling-stroke');
-	return rect.style.vectorEffect === 'non-scaling-stroke';
-})();
+	supportsPathBBox_ = (function() {
+		if (!supportsBBox_){ return false; }
+		var svgcontent = document.createElementNS(svgns, 'svg');
+		document.documentElement.appendChild(svgcontent);
+		var path = document.createElementNS(svgns, 'path');
+		path.setAttribute('d','M0,0 C0,0 10,10 10,0');
+		svgcontent.appendChild(path);
+		var bbox = path.getBBox();
+		document.documentElement.removeChild(svgcontent);
+		return (bbox.height > 4 && bbox.height < 5);
+	})();
 
-var supportsNativeSVGTransformLists_ = (function() {
-	var rect = document.createElementNS(svgns, 'rect');
-	var rxform = rect.transform.baseVal;
-	
-	var t1 = svg.createSVGTransform();
-	rxform.appendItem(t1);
-	return rxform.getItem(0) == t1;
-})();
+	// Support for correct bbox sizing on groups with horizontal/vertical lines
+	supportsHVLineContainerBBox_ = (function() {
+		if (!supportsBBox_){ return false; }
+		var svgcontent = document.createElementNS(svgns, 'svg');
+		document.documentElement.appendChild(svgcontent);
+		var path = document.createElementNS(svgns, 'path');
+		path.setAttribute('d','M0,0 10,0');
+		var path2 = document.createElementNS(svgns, 'path');
+		path2.setAttribute('d','M5,0 15,0');
+		var g = document.createElementNS(svgns, 'g');
+		g.appendChild(path);
+		g.appendChild(path2);
+		svgcontent.appendChild(g);
+		var bbox = g.getBBox();
+		document.documentElement.removeChild(svgcontent);
+		// Webkit gives 0, FF gives 10, Opera (correctly) gives 15
+		return (bbox.width == 15);
+	})();
+
+	supportsEditableText_ = (function() {
+		// TODO: Find better way to check support for this
+		return isOpera_;
+	})();
+
+	supportsGoodDecimals_ = (function() {
+		// Correct decimals on clone attributes (Opera < 10.5/win/non-en)
+		var rect = document.createElementNS(svgns, 'rect');
+		rect.setAttribute('x',.1);
+		var crect = rect.cloneNode(false);
+		var retValue = (crect.getAttribute('x').indexOf(',') == -1);
+		if(!retValue) {
+			$.alert("NOTE: This version of Opera is known to contain bugs in SVG-edit.\n\
+			Please upgrade to the <a href='http://opera.com'>latest version</a> in which the problems have been fixed.");
+		}
+		return retValue;
+	})();
+
+	supportsNonScalingStroke_ = (function() {
+		var rect = document.createElementNS(svgns, 'rect');
+		rect.setAttribute('style','vector-effect:non-scaling-stroke');
+		return rect.style.vectorEffect === 'non-scaling-stroke';
+	})();
+
+	supportsNativeSVGTransformLists_ = (function() {
+		var rect = document.createElementNS(svgns, 'rect');
+		var rxform = rect.transform.baseVal;
+		var t1 = svg.createSVGTransform();
+		rxform.appendItem(t1);
+		return rxform.getItem(0) == t1;
+	})();
+}
+
+checkFeatures();
 
 // Public API
 
@@ -162,13 +222,17 @@ svgedit.browser.isWindows = function() { return isWindows_; }
 svgedit.browser.isMac = function() { return isMac_; }
 svgedit.browser.isTouch = function() { return isTouch_; }
 
+svgedit.browser.checkFeatures = checkFeatures;
+
 svgedit.browser.supportsSelectors = function() { return supportsSelectors_; }
 svgedit.browser.supportsXpath = function() { return supportsXpath_; }
 
 svgedit.browser.supportsPathReplaceItem = function() { return supportsPathReplaceItem_; }
 svgedit.browser.supportsPathInsertItemBefore = function() { return supportsPathInsertItemBefore_; }
+svgedit.browser.supportsBBox = function() { return supportsBBox_; }
 svgedit.browser.supportsPathBBox = function() { return supportsPathBBox_; }
 svgedit.browser.supportsHVLineContainerBBox = function() { return supportsHVLineContainerBBox_; }
+svgedit.browser.supportsTextCharPos = function() { return supportsTextCharPos_; }
 svgedit.browser.supportsGoodTextCharPos = function() { return supportsGoodTextCharPos_; }
 svgedit.browser.supportsEditableText = function() { return supportsEditableText_; }
 svgedit.browser.supportsGoodDecimals = function() { return supportsGoodDecimals_; }
