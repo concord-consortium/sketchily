@@ -88,7 +88,7 @@ function embedded_svg_edit(frame){
 		"ungroupSelectedElement", "moveToTopSelectedElement", "moveToBottomSelectedElement", "moveSelectedElements",
 		"getStrokedBBox", "getVisibleElements", "cycleElement", "getUndoStackSize", "getRedoStackSize", "getNextUndoCommandText",
 		"getNextRedoCommandText", "undo", "redo", "cloneSelectedElements", "alignSelectedElements", "getZoom", "getVersion",
-		"setIconSize", "setLang", "setCustomHandlers"];
+		"setIconSize", "setLang", "setCustomHandlers", "recheckBrowserFeatures"];
 
   //TODO: rewrite the following, it's pretty scary.
   for(var i = 0; i < functions.length; i++){

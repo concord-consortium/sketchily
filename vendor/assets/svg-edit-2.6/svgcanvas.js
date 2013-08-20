@@ -8717,6 +8717,11 @@ this.cycleElement = function(next) {
 	call("selected", selectedElements);
 }
 
+this.recheckBrowserFeatures = function () {
+	svgedit.browser.checkFeatures();
+	svgedit.units.updateTypeMap();
+}
+
 this.clear();
 
 

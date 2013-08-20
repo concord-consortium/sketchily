@@ -64,6 +64,10 @@ var typeMap_ = {px: 1};
 svgedit.units.init = function(elementContainer) {
 	elementContainer_ = elementContainer;
 
+	svgedit.units.updateTypeMap();
+};
+
+svgedit.units.updateTypeMap = function () {
 	var svgns = 'http://www.w3.org/2000/svg';
 
 	// Get correct em/ex values by creating a temporary SVG.
@@ -88,6 +92,7 @@ svgedit.units.init = function(elementContainer) {
 		typeMap_['pt'] = inch / 72;
 		typeMap_['pc'] = inch / 6;
 		typeMap_['%'] = 0;
+		typeMap_['source'] = 'calculated';
 	} else {
 		// use a default of 96 pixels per inch if BBox is not
 		// available at this point
@@ -100,6 +105,7 @@ svgedit.units.init = function(elementContainer) {
 		typeMap_['pt'] = inch / 72;
 		typeMap_['pc'] = inch / 6;
 		typeMap_['%'] = 0;
+		typeMap_['source'] = 'default';
 	}
 };
 
