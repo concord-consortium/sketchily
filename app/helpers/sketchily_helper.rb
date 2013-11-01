@@ -9,7 +9,7 @@ module SketchilyHelper
         bkgd_file_node = Nokogiri::XML::Node.new 'g', doc
         Nokogiri::XML::Builder.with(bkgd_file_node) do |xml|
           xml.title 'Background Image Layer'
-          xml.image :id => 'background_image', :width => '100%', :height => '100%', :preserveAspectRatio => 'xMinYMin', 'xlink:href' => data_uri
+          xml.image :id => 'background_image', :width => '100%', :height => '100%', :preserveAspectRatio => 'xMidYMid', 'xlink:href' => data_uri
         end
         doc.root.add_namespace "xlink", "http://www.w3.org/1999/xlink"
         doc.at('g').before(bkgd_file_node)

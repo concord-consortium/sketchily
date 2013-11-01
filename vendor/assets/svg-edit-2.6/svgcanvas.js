@@ -8674,7 +8674,7 @@ this.setBackground = function(color, url) {
 				'id': 'background_image',
 				'width': '100%',
 				'height': '100%',
-				'preserveAspectRatio': 'xMinYMin',
+				'preserveAspectRatio': 'xMidYMid',
 				'style':'pointer-events:none'
 			});
 		}
